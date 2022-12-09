@@ -1,8 +1,15 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='certbot-dns-zone',
-    package='certbot_dns_zone.py',
+    version='1.0.0',
+    description="Zone DNS Authenticator plugin for Certbot",
+    url="https://github.com/leede-org/certbot-dns-zone",
+    author="Leede",
+    author_email="info@leede.ee",
+    license="MIT License",
+    python_requires=">=3.7",
+    packages=find_packages(),
     install_requires=[
         'certbot',
         'requests'
