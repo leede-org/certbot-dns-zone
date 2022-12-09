@@ -2,6 +2,12 @@
 
 Zone (https://zone.ee) DNS Authenticator plugin for Certbot
 
+## Installation
+
+```shell
+sudo pip3 install 'certbot-dns-zone @ git+https://github.com/leede-org/certbot-dns-zone@main'
+```
+
 ## Usage
 
 Generate an API token in Zone and create `zone-credentials.ini` containing
@@ -14,7 +20,7 @@ dns_zone_api_token = YOUR_ZONE_API_TOKEN
 Example:
 
 ```shell
-certbot certonly --authenticator dns-zone --dns-zone-credentials ~/zone-credentials.ini --dns-zone-propagation-seconds 30 -d example.com
+sudo certbot certonly --authenticator dns-zone --dns-zone-credentials ~/zone-credentials.ini --dns-zone-propagation-seconds 30 -d example.com
 ```
 
 Using the default propagation of 10 seconds was not successful in my attempts so I recommend using 30 seconds as shown above.
