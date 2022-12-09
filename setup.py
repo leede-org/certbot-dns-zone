@@ -9,7 +9,7 @@ setup(
     ],
     entry_points={
         'certbot.plugins': [
-            'dns-zone = certbot_dns_zone:Authenticator'
+            'dns-zone = certbot_dns_zone._internal.dns_zone:Authenticator'
         ],
     },
 )
