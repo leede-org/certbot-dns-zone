@@ -15,8 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class Authenticator(dns_common.DNSAuthenticator):
-    description = 'Obtain certificates using a DNS TXT record (if you are ' + \
-                  'using Zone for DNS).'
+    description = 'Obtain certificates using a DNS TXT record (if you are using Zone for DNS).'
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -29,8 +28,7 @@ class Authenticator(dns_common.DNSAuthenticator):
         add('credentials', help='Zone credentials INI file.')
 
     def more_info(self) -> str:
-        return 'This plugin configures a DNS TXT record to respond to a dns-01 challenge using ' + \
-               'the Zone API.'
+        return 'This plugin configures a DNS TXT record to respond to a dns-01 challenge using the Zone API.'
 
     def _setup_credentials(self) -> None:
         self.credentials = self._configure_credentials(
