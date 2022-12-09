@@ -1,4 +1,3 @@
-"""DNS Authenticator for Zone."""
 import json
 import base64
 import logging
@@ -14,12 +13,8 @@ from certbot.plugins.dns_common import CredentialsConfiguration
 
 logger = logging.getLogger(__name__)
 
+
 class Authenticator(dns_common.DNSAuthenticator):
-    """DNS Authenticator for Zone
-
-    This Authenticator uses the Zone API to fulfill a dns-01 challenge.
-    """
-
     description = 'Obtain certificates using a DNS TXT record (if you are ' + \
                   'using Zone for DNS).'
 
@@ -46,7 +41,7 @@ class Authenticator(dns_common.DNSAuthenticator):
                 'api_token': 'API token for Zone account'
             }
         )
-        
+
     def _perform(self, domain: str, validation_name: str, validation: str) -> None:
         self._get_zone_client().add_txt_record(domain, validation_name, validation)
 
@@ -54,20 +49,24 @@ class Authenticator(dns_common.DNSAuthenticator):
         self._get_zone_client().del_txt_record(domain, validation_name, validation)
 
     def _get_zone_client(self) -> "_ZoneClient":
-        if not self.credentials:  # pragma: no cover
+        if not self.credentials:
             raise errors.Error("Plugin has not been prepared.")
         return _ZoneClient(self.credentials.conf('username'), self.credentials.conf('api_token'))
 
+
 class _ZoneDomain(TypedDict):
     name: str
+
 
 class _ZoneRecord(TypedDict):
     id: str
     name: str
     destination: str
 
+
 class _ZoneException(Exception):
     pass
+
 
 class _ZoneClient:
     """
@@ -91,7 +90,8 @@ class _ZoneClient:
         return r.json()
 
     def _post(self, path: str, data: Any):
-        r = requests.post(self.api_url + path, json.dumps(data), headers=self.headers)
+        r = requests.post(self.api_url + path,
+                          json.dumps(data), headers=self.headers)
 
         if r.status_code != 201:
             raise _ZoneException(r.text)
@@ -105,20 +105,12 @@ class _ZoneClient:
             raise _ZoneException(r.text)
 
     def add_txt_record(self, domain_name: str, record_name: str, destination: str) -> None:
-        """
-        Add a TXT record using the supplied information.
-
-        :param str domain_name: The domain to use to associate the record with.
-        :param str record_name: The record name (typically beginning with '_acme-challenge.').
-        :param str destination: The record content (typically the challenge validation).
-        :raises certbot.errors.PluginError: if an error occurs communicating with the Zone API
-        """
-
         try:
             domain = self._find_domain(domain_name)
         except _ZoneException as e:
             logger.debug('Error finding domain using the Zone API: %s', e)
-            raise errors.PluginError('Error finding domain using the Zone API: %s'.format(e))
+            raise errors.PluginError(
+                'Error finding domain using the Zone API: %s'.format(e))
 
         try:
             result: List[_ZoneRecord] = self._post("/dns/" + domain['name'] + "/txt", {
@@ -127,26 +119,14 @@ class _ZoneClient:
             })
 
             record_id = result[0]['id']
-            logger.debug('Successfully added TXT record with id: %s', record_id)
+            logger.debug(
+                'Successfully added TXT record with id: %s', record_id)
         except _ZoneException as e:
             logger.debug('Error adding TXT record using the Zone API: %s', e)
             raise errors.PluginError('Error adding TXT record using the Zone API: {0}'
                                      .format(e))
 
     def del_txt_record(self, domain_name: str, record_name: str, destination: str) -> None:
-        """
-        Delete a TXT record using the supplied information.
-
-        Note that both the record's name and content are used to ensure that similar records
-        created concurrently (e.g., due to concurrent invocations of this plugin) are not deleted.
-
-        Failures are logged, but not raised.
-
-        :param str domain_name: The domain to use to associate the record with.
-        :param str record_name: The record name (typically beginning with '_acme-challenge.').
-        :param str destination: The record content (typically the challenge validation).
-        """
-
         try:
             domain = self._find_domain(domain_name)
         except _ZoneException as e:
@@ -168,24 +148,16 @@ class _ZoneClient:
                 logger.debug('Removing TXT record with id: %s', record['id'])
                 self._delete("/dns/" + domain['name'] + "/txt/" + record['id'])
             except _ZoneException as e:
-                logger.warning('Error deleting TXT record %s using the Zone API: %s', record['id'], e)
-    
+                logger.warning(
+                    'Error deleting TXT record %s using the Zone API: %s', record['id'], e)
+
     def get_txt_records(self, domain: _ZoneDomain) -> List[_ZoneRecord]:
         return self._get("/dns/" + domain['name'] + "/txt")
-    
+
     def get_all_domains(self) -> List[_ZoneDomain]:
         return self._get("/domain")
 
     def _find_domain(self, domain_name: str) -> _ZoneDomain:
-        """
-        Find the domain object for a given domain name.
-
-        :param str domain_name: The domain name for which to find the corresponding Domain.
-        :returns: The Domain, if found.
-        :rtype: `~zone.Domain`
-        :raises certbot.errors.PluginError: if no matching Domain is found.
-        """
-
         domain_name_guesses = dns_common.base_domain_name_guesses(domain_name)
         domains = self.get_all_domains()
 
@@ -194,7 +166,8 @@ class _ZoneClient:
 
             if matches:
                 domain = matches[0]
-                logger.debug('Found base domain for %s using name %s', domain_name, guess)
+                logger.debug(
+                    'Found base domain for %s using name %s', domain_name, guess)
                 return domain
 
         raise errors.PluginError(f'Unable to determine base domain for {domain_name} using names: '
